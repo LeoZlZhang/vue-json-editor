@@ -8,20 +8,24 @@
                      @click.stop="adding_new_kv"></div>
             </div>
             <div class="input">
-                <input :style="{width: `${label_width+9}px`}" type="text" :value="label" placeholder="key..."
-                       v-if="edit_mode"
-                       @mouseover="show_input_border($event.target.parentNode, editing_color)"
-                       @mouseout="transparent_input_border($event.target.parentNode, editing_color)"
-                       @focus.stop="input_focus_style($event.target.parentNode, editing_color)"
-                       @focusout.stop="focus_out_style($event.target.parentNode, editing_color);keyChanged($event)"/>
-                <div v-else :style="{width: `${label_width+9}px`}" style="white-space: nowrap;">{{label}}</div>
+                <template v-if="label_fixed">
+                    <div :style="{width: `${label_width+9}px`}" style="white-space: nowrap;color: rgba(121, 85, 72, 1)">{{label}}</div>
+                </template>
+                <template v-else>
+                    <input :style="{width: `${label_width+9}px`}" type="text" :value="label" placeholder="key..."
+                           v-if="edit_mode"
+                           @mouseover="show_input_border($event.target.parentNode, editing_color)"
+                           @mouseout="transparent_input_border($event.target.parentNode, editing_color)"
+                           @focus.stop="input_focus_style($event.target.parentNode, editing_color)"
+                           @focusout.stop="focus_out_style($event.target.parentNode, editing_color);keyChanged($event)"/>
+                    <div v-else :style="{width: `${label_width+9}px`}" style="white-space: nowrap;">{{label}}</div>
+                </template>
             </div>
             <div>
                 <div><strong>:</strong></div>
             </div>
             <div v-if="value instanceof Object" class="input" @mouseout="transparent_input_border($event.target)">
-                <t-array v-if="value instanceof Array" :data="value" :edit_mode="edit_mode" @change="onChange"></t-array>
-                <t-map v-else :data="value" :edit_mode="edit_mode" @change="onChange"></t-map>
+                <t-map :data="value" :edit_mode="edit_mode" @change="onChange"></t-map>
             </div>
             <div v-else class="input">
                 <input :style="value_width" type="text" :value="value" placeholder="value..."
@@ -47,18 +51,11 @@
     export default{
         name: 'keyValuePair',
         props: {
-            label: String,
+            label_fixed: {style: Boolean, required: false, default: false},
+            label: {style: String, required: false, default: null},
             value: [String, Number, Boolean, Object, Array],
-            label_width: {
-                style: Number,
-                required: false,
-                default: 6
-            },
-            edit_mode: {
-                style: Boolean,
-                required: false,
-                default: false
-            },
+            label_width: {style: Number, required: false, default: 6},
+            edit_mode: {style: Boolean, required: false, default: false},
         },
         data(){
             return {
@@ -67,7 +64,8 @@
                 deleting_color: [244, 67, 54],
                 kvContainer_style: {
                     display: 'flex',
-                    margin: '5px 0',
+                    margin: '2px 0',
+                    padding: '1px 1px',
                     border: '1px solid transparent',
                     'border-radius': '9px',
                     'box-shadow': 0,
@@ -80,19 +78,19 @@
         },
         methods: {
             show_container_border(rgbArray){
-                if (this.edit_mode) {
+                if (this.edit_mode && this.$refs.container) {
                     this.$refs.container.style.borderColor = `rgba(${rgbArray}, 1)`;
                     this.$refs.container.style.boxShadow = `0 0 10px 0 rgba(${rgbArray}, 1)`
                 }
             },
             transparent_container_border(){
-                if (this.edit_mode) {
+                if (this.edit_mode && this.$refs.container) {
                     this.$refs.container.style.borderColor = 'transparent';
                     this.$refs.container.style.boxShadow = '0 0 0 0 transparent'
                 }
             },
             show_op_button(){
-                if (this.edit_mode) {
+                if (this.edit_mode && this.$refs['add'] && this.$refs['del']) {
                     this.$refs['add'].style.backgroundColor = `rgba(${this.adding_color}, 1)`;
                     this.$refs['add'].style.boxShadow = `0 0 3px 0 rgba(${this.adding_color}, 1)`;
                     this.$refs['del'].style.backgroundColor = `rgba(${this.deleting_color}, 1)`;
@@ -100,7 +98,7 @@
                 }
             },
             transparent_op_button(){
-                if (this.edit_mode) {
+                if (this.edit_mode && this.$refs['add'] && this.$refs['del']) {
                     this.$refs['add'].style.backgroundColor = 'transparent';
                     this.$refs['add'].style.boxShadow = '0 0 0 0 transparent';
                     this.$refs['del'].style.backgroundColor = 'transparent';
@@ -108,18 +106,26 @@
                 }
             },
             show_input_border(node, rgbArray){
-                node.style.borderColor = `rgba(${rgbArray}, 1)`;
-                node.style.boxShadow = `0 0px 10px 0 rgba(${rgbArray}, 1)`;
+                if (node) {
+                    node.style.borderColor = `rgba(${rgbArray}, 1)`;
+                    node.style.boxShadow = `0 0px 10px 0 rgba(${rgbArray}, 1)`;
+                }
             },
             transparent_input_border(node){
-                node.style.borderColor = 'transparent';
-                node.style.boxShadow = '0 0 0 0 transparent';
+                if (node) {
+                    node.style.borderColor = 'transparent';
+                    node.style.boxShadow = '0 0 0 0 transparent';
+                }
             },
             input_focus_style(node, rgbArray){
-                node.style.backgroundColor = `rgba(${rgbArray},0.5)`;
+                if (node) {
+                    node.style.backgroundColor = `rgba(${rgbArray},0.5)`;
+                }
             },
             focus_out_style(node){
-                node.style.backgroundColor = 'transparent';
+                if (node) {
+                    node.style.backgroundColor = 'transparent';
+                }
             },
             adding_new_kv(){
                 this.$emit('change', 'insert', this.label);
@@ -160,6 +166,8 @@
     }
 
     input {
+        font-size: 12px;
+        padding: 0;
         outline: none;
         border: 0;
         background: transparent;
@@ -171,7 +179,7 @@
     }
 
     div.op {
-        margin: 5px 1px 0 1px;
+        margin: 3px 1px 0 1px;
         width: 10px;
         height: 10px;
         border-radius: 5px;
