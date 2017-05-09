@@ -1,15 +1,8 @@
-export const calSentenceLength = (sentence, fontSize) => {
-    if (sentence && fontSize) {
-        let totalLength = sentence.toString().length;
-        let zns = sentence.toString().match(/[\u4e00-\u9fa5]/g);
-        let znLength = zns ? zns.length : 0;
-        let caps = sentence.toString().match(/[A-Z]/g);
-        let capLength = caps ? caps.length : 0;
-        let capSize = Math.ceil(fontSize * 2 / 3);
-        let symbolSize = Math.ceil(fontSize / 2);
-        return znLength * fontSize + capLength * capSize + (totalLength - znLength - capLength) * symbolSize;
-    } else
-        return 0
+export const measure_width = (words) => {
+    let sp = document.getElementById("sp");
+    sp.innerHTML = words;
+
+    return sp.clientWidth;
 };
 
 

@@ -9,7 +9,7 @@
                 require: false,
                 default: 'rgba(52, 152, 219, 0.8)'
             }
-        }
+        },
     }
 </script>
 <style scoped>
