@@ -1,23 +1,16 @@
 <template>
     <div :style="container_style" @mouseover.stop="" @mouseout.stop="" @click.stop="">
-        <t-flag :color="style_color_rgb"></t-flag>
         <div class="content_style">
             <template v-if="data && Object.keys(data).length>0">
-                <div v-for="(value,key) in data" :key="key">
-                    <t-kv v-if="data_is_array"
-                          :label="key"
-                          :label_width="6"
-                          :label_fixed="true"
-                          :value_width="value_width(value)"
-                          :value="value"
-                          :edit_mode="edit_mode"
-                          @change="onChange"></t-kv>
-                    <t-kv v-else
-                          :label="key.toString()"
+                <div v-for="(value_of_data,key_of_data) in data" :key="key_of_data">
+                    <t-kv :label="key_of_data.toString()"
+                          :value="value_of_data"
                           :label_width="label_width_max"
-                          :value_width="value_width(value)"
-                          :value="value"
+                          :value_width="value_width(value_of_data)"
                           :edit_mode="edit_mode"
+                          :mode="operation_mode.mode"
+                          :options="operation_mode.options"
+                          :query_mode_function="query_mode_function"
                           @change="onChange"></t-kv>
                 </div>
             </template>
@@ -40,15 +33,22 @@
     export default{
         name: 'jsonMap',
         props: {
+            label: [String],
             data: [Array, Object],
             edit_mode: {type: Boolean, required: false, default: false},
+            query_mode_function: {
+                type: Function, required: false, default: (key) => {
+                    return {mode: 'free_style', keys: null, options: null};
+                }
+            }
         },
         data(){
             return {
-                color_of_object_data :[52, 52, 219],
-                color_of_array_data :[121, 85, 72],
+                color_of_object_data: [52, 52, 219],
+                color_of_array_data: [121, 85, 72],
                 reCompute: false,
                 data_is_array: false,
+                operation_mode: {mode: 'free_style', keys: null, options: null}
             }
         },
         computed: {
@@ -59,13 +59,15 @@
                     'border-bottom-right-radius': '3px',
                     'border-top-right-radius': '3px',
                     'border': `1px solid rgba(${this.style_color_rgb},1)`,
+                    'border-left': `6px solid rgba(${this.style_color_rgb},1)`,
                     'box-shadow': `0 0 10px 0 rgba(${this.style_color_rgb}, 0.26)`,
                 }
             },
             init_btn_style(){
                 return {
                     visibility: this.edit_mode ? 'visible' : 'hidden',
-                    display: 'inline-flex'
+                    display: 'flex',
+                    'margin-left': '5px'
                 }
             },
             width_transition_style(){
@@ -80,7 +82,9 @@
             label_width_max(){
                 this.reCompute;
                 let wids = [24];
-                Object.keys(this.data).forEach(d => wids.push(measure_width(d)));
+                this.operation_mode.options ?
+                    Object.values(this.operation_mode.options).forEach(d => wids.push(measure_width(d))) :
+                    Object.keys(this.data).forEach(d => wids.push(measure_width(d)));
                 return Math.max(...wids);
             },
             value_width_max(){
@@ -93,10 +97,13 @@
                 this.reCompute
                 if (Object.keys(this.data).length > 0) {
                     let label_max = this.label_width_max;
-                    let wids = [this.label_width_max + this.value_width_max + 60];
+                    let wids = [this.label_width_max + this.value_width_max + 80];
                     Object.values(this.$children)
                         .filter(c => c.value instanceof Object && this.data.hasOwnProperty(c.label))
-                        .forEach(com_kv => wids.push(label_max + (com_kv.$children[0] ? com_kv.$children[0].sub_component_width_max : 80) + 65));
+                        .forEach(com_kv => {
+                            let child = com_kv.$children[com_kv.$children.length - 1];
+                            wids.push(label_max + (child ? child.sub_component_width_max : 0) + 80)
+                        });
                     return Math.max(...wids);
                 } else {
                     return 80
@@ -105,14 +112,7 @@
         },
         methods: {
             addFirstKv(){
-                if (this.data_is_array) {
-                    this.data.push('');
-                } else {
-                    insertProperty(this.data);
-                }
-                this.reCompute = !this.reCompute;
-                this.$forceUpdate();
-                this.$emit('change');
+                this.data_is_array ? this.onChange('insert', 0, '') : this.onChange('insert');
             },
             delThis(){
                 this.$emit('change', 'delete')
@@ -131,8 +131,29 @@
                         delete this.data[key];
                     } else if (type === 'insert') {
                         insertProperty(this.data, key);
-                    } else if (type === 'update_key') {
-                        updateProperty(this.data, key, newVal);
+                    } else if (type === 'update_key' && key !== newVal) {
+                        if (this.data.hasOwnProperty(newVal)) {
+                            this.$children.filter(c => c.label === key).forEach(c => c.$forceUpdate())
+                        } else {
+                            let mode_old = this.query_mode_function(key);
+                            let mode_new = this.query_mode_function(newVal);
+                            if (mode_old.mode !== 'free_style' || this.data[key] instanceof Object) {
+                                if (confirm("switch plugin may remove data, ok?")) {
+                                    updateProperty(this.data, key, newVal);
+                                    if (mode_new.mode !== 'free_style')
+                                        this.data[newVal] = mode_new.mode === 'array' ? [] : {};
+                                    else
+                                        this.data[newVal] = '';
+                                } else {
+                                    this.$children.filter(c => c.label === key).forEach(c => c.$forceUpdate())
+                                }
+                            } else {
+                                updateProperty(this.data, key, newVal);
+                                if (mode_new.mode !== 'free_style') {
+                                    this.data[newVal] = mode_new.mode === 'array' ? [] : {};
+                                }
+                            }
+                        }
                     } else if (type === 'update_value') {
                         this.data[key] = newVal === '{}' ? {} : newVal === '[]' ? [] : newVal;
                     }
@@ -141,16 +162,28 @@
                 this.reCompute = !this.reCompute;
                 this.$emit('change')
             },
-            value_width(value){
+            value_width(value)
+            {
                 return Math.max(measure_width(value), 36)
-            },
+            }
+            ,
         },
-        created(){
+        created()
+        {
+            this.operation_mode = this.query_mode_function(this.label);
+            if (this.data && Object.keys(this.data).length === 0) {
+                if (this.operation_mode.mode === 'fixed_keys') {
+                    this.operation_mode.keys.forEach(key => this.data[key] = this.query_mode_function(key).mode === 'free_style' ? '' : {});
+                }
+            }
             this.data_is_array = this.data instanceof Array;
-        },
-        mounted(){
+        }
+        ,
+        mounted()
+        {
             this.$emit('change')
-        },
+        }
+        ,
     }
 </script>
 <style scoped>

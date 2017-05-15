@@ -4,20 +4,20 @@
             <textarea style="margin: 10px;width:500px;height:500px;white-space: pre-wrap;" :value="JSON.stringify(myData,null,4)" @blur="myData=JSON.parse($event.target.value)"></textarea>
             <div style="display: block;margin: 10px">
                 <div>
-                    <t-map :data="myData" :edit_mode="editable" @change="$forceUpdate()" :style="{boxShadow: editable? '0 0 10px 0 green':''}"></t-map>
+                    <t-map :data="myData"
+                           :edit_mode="editable"
+                           @change="$forceUpdate()"
+                           :query_mode_function="query_mode_function"
+                           :style="{boxShadow: editable? '0 0 10px 0 green':''}" ></t-map>
                 </div>
                 <div style="margin: 5px">
                     <input type="button" value="edit" style="width: 100px" @click="editable=!editable"/>
                 </div>
             </div>
         </div>
-        <div>
-            <!--<select>-->
-                <!--<option>a</option>-->
-                <!--<option>bb</option>-->
-                <!--<option>cccdfadfa</option>-->
-            <!--</select>-->
-            <span id="sp" style="display: inline-block"></span>
+        <div >
+            <t-select :options="['hello','1',2,3,4,5,6]" v-model="value"></t-select>
+            <span id="sp" style="display: inline-block; visibility: hidden"></span>
         </div>
     </div>
 </template>
@@ -29,12 +29,28 @@
             return {
                 editable: false,
                 myData: {},
+                value: null,
                 style: {
                     'background-color': 'rgba(55,55,55, 1)',
                     width: '100px',
                     height: '100px',
                     transition: 'all 0.5s linear',
                 }
+            }
+        },
+        methods:{
+            query_mode_function(key){
+                if (key && key==='opt')
+                    return {mode: 'options_key', keys: null, options: ['hello','world12345','fix','arr']};
+                if (key && key==='fix')
+                    return {mode: 'fixed_keys', keys: ['k1','k2','k3','opt1'], options: null};
+                if (key && key==='k3')
+                    return {mode: 'fixed_keys', keys: ['k4','k5','k6','opt'], options: null};
+                if (key && key==='arr')
+                    return {mode: 'array', keys: null, options: null, plugin:'db'};
+                if (key && key==='db')
+                    return {mode: 'fixed_keys', keys: ['url','user','pwd'], options: null};
+                return {mode: 'free_style', keys: null, options: null};
             }
         }
     }

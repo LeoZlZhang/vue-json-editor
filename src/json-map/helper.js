@@ -9,7 +9,7 @@ export const measure_width = (words) => {
 export const updateProperty = (targetObj, oldPro, newPro) => {
     if (targetObj && (oldPro || oldPro === '') && (newPro || newPro === '')) {
         newPro = !(/^[\d]+$/.test(newPro)) ? newPro : '#'.concat(newPro) === oldPro ? newPro.concat('#') : '#'.concat(newPro);
-        if (oldPro === newPro) {
+        if (oldPro === newPro || targetObj.hasOwnProperty(newPro)) {
             return;
         }
         let newObj = {};

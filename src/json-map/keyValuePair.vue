@@ -4,43 +4,44 @@
              @mouseover.stop="show_op_button"
              @mouseout.stop="transparent_op_button">
             <div class="op_outer">
-                <div class="op" ref="del"
+                <div class="op"
+                     :class="{op_ctl:edit_mode && mode !== 'fixed_keys'}"
+                     ref="del"
                      @mouseover="show_container_border(deleting_color)"
                      @mouseout="transparent_container_border"
                      @click.stop="deleting_kv"></div>
             </div>
-            <div class="input">
-                <template v-if="label_fixed">
-                    <div :style="style_label_width" style="white-space: nowrap;color: rgba(121, 85, 72, 1)">{{label}}</div>
-                </template>
-                <template v-else>
-                    <input :style="style_label_width" type="text" :value="label" placeholder="key..."
-                           v-if="edit_mode"
-                           @mouseover="show_input_border($event.target.parentNode, editing_color)"
-                           @mouseout="transparent_input_border($event.target.parentNode, editing_color)"
-                           @focus.stop="input_focus_style($event.target.parentNode, editing_color)"
-                           @focusout.stop="focus_out_style($event.target.parentNode);keyChanged($event)"/>
-                    <div v-else :style="style_label_width" style="white-space: nowrap;">{{label}}</div>
-                </template>
+            <div :class="{input:true,input_ctl:edit_mode && (mode ==='free_style' || mode ==='options_key')}">
+                <input
+                        v-if="mode==='free_style'"
+                        :style="style_label_width"
+                        type="text" :value="label"
+                        placeholder="key..."
+                        :disabled="!edit_mode"
+                        @focusout="keyChanged($event.target.value)"/>
+                <div
+                        v-if="mode==='fixed_keys'|| mode==='array'"
+                        class="fixed_label"
+                        :style="style_label_width">{{label}}
+                </div>
+                <t-select
+                        v-if="mode==='options_key'"
+                        :width="label_width"
+                        :options="options"
+                        :value="label"
+                        @input="keyChanged"></t-select>
             </div>
-            <div>
-                <div class="semicolon"><strong>:</strong></div>
+            <div class="semicolon"><strong>:</strong></div>
+            <div :class="{input:true,input_ctl:false}" v-if="value instanceof Object">
+                <t-map :label="label" :data="value" :edit_mode="edit_mode" :query_mode_function="query_mode_function" @change="onChange"></t-map>
             </div>
-            <div v-if="value instanceof Object" class="input" @mouseout="transparent_input_border($event.target)">
-                <t-map :data="value" :edit_mode="edit_mode" @change="onChange"></t-map>
-            </div>
-            <div v-else class="input">
-                <input :style="style_value_width" type="text" :value="value" placeholder="value..."
-                       v-if="edit_mode"
-                       @mouseover="show_input_border($event.target.parentNode, editing_color)"
-                       @mouseout="transparent_input_border($event.target.parentNode)"
-                       @focus.stop="input_focus_style($event.target.parentNode, editing_color)"
-                       @focusout.stop="focus_out_style($event.target.parentNode)"
-                       @input="valueChanged"/>
-                <div v-else :style="style_value_width" style="white-space: nowrap;">{{value}}</div>
+            <div :class="{input:true,input_ctl:edit_mode}" v-else>
+                <input :style="style_value_width" type="text" :value="value" placeholder="value..." :disabled="!edit_mode" @input="valueChanged"/>
             </div>
             <div class="pull_right op_outer">
-                <div class="op" ref="add"
+                <div class="op"
+                     :class="{op_ctl:edit_mode && mode !== 'fixed_keys'}"
+                     ref="add"
                      @mouseover="show_container_border(adding_color)"
                      @mouseout="transparent_container_border"
                      @click.stop="adding_new_kv"></div>
@@ -50,14 +51,23 @@
 </template>
 <script>
     export default{
-        name: 'keyValuePair',
         props: {
-            label_fixed: {type: Boolean, required: false, default: false},
             label: {type: [String, Number, Boolean], required: false, default: null},
             value: [String, Number, Boolean, Object, Array],
             label_width: {type: Number, required: false, default: 6},
             value_width: {type: Number, required: false, default: 36},
             edit_mode: {type: Boolean, required: false, default: false},
+            mode: {type: String, required: true, default: 1},
+            options: {
+                type: Array, required: false, default: () => {
+                    return []
+                }
+            },
+            query_mode_function: {
+                type: Function, required: false, default: (key) => {
+                    return {mode: 'free_style', keys: null, options: null};
+                }
+            }
         },
         data(){
             return {
@@ -95,36 +105,16 @@
                     this.$refs['del'].style.boxShadow = '0 0 0 0 transparent'
                 }
             },
-            show_input_border(node, rgbArray){
-                if (node) {
-                    node.style.borderColor = `rgba(${rgbArray}, 1)`;
-                    node.style.boxShadow = `0 0px 10px 0 rgba(${rgbArray}, 1)`;
-                }
-            },
-            transparent_input_border(node){
-                if (node) {
-                    node.style.borderColor = 'transparent';
-                    node.style.boxShadow = '0 0 0 0 transparent';
-                }
-            },
-            input_focus_style(node, rgbArray){
-                if (node) {
-                    node.style.backgroundColor = `rgba(${rgbArray},0.5)`;
-                }
-            },
-            focus_out_style(node){
-                if (node) {
-                    node.style.backgroundColor = 'transparent';
-                }
-            },
             adding_new_kv(){
-                this.$emit('change', 'insert', this.label);
+                if (this.edit_mode && this.mode !== 'fixed_keys')
+                    this.$emit('change', 'insert', this.label);
             },
             deleting_kv(){
-                this.$emit('change', 'delete', this.label);
+                if (this.edit_mode && this.mode !== 'fixed_keys')
+                    this.$emit('change', 'delete', this.label);
             },
-            keyChanged(e){
-                this.$emit('change', 'update_key', this.label, e.target.value);
+            keyChanged(value){
+                this.$emit('change', 'update_key', this.label, value);
             },
             valueChanged(e){
                 this.$emit('change', 'update_value', this.label, e.target.value);
@@ -143,7 +133,7 @@
             },
             style_value_width(){
                 return {width: `${this.value_width}px`}
-            }
+            },
         },
     }
 </script>
@@ -151,7 +141,7 @@
     div.kvContainer_style {
         color: black;
         display: flex;
-        margin: 1px 0 1px 0;
+        margin: 2px 0;
         padding: 1px 1px;
         border: 1px solid transparent;
         border-radius: 9px;
@@ -163,35 +153,48 @@
     }
 
     div.input {
-        border: 1px solid transparent;
+        margin: 0 3px;
+        border: 0px solid transparent;
         border-radius: 9px;
-        padding: 0 7px;
+    }
+
+    div.input_ctl:hover {
+        box-shadow: 0 0 10px 0 rgba(33, 150, 243, 0.8);
+    }
+
+    input {
+        font-size: 12px;
+        padding: 0 10px;
+        outline: none;
+        border: 0px solid transparent;
+        border-radius: 9px;
         background-color: transparent;
-        transition-property: border, background-color;
-        transition-duration: 150ms;
-        transition-timing-function: linear;
+        color: #2E7D32;
+        transition: width, background-color 0.15s linear;
+    }
+
+    div.fixed_label {
+        white-space: nowrap;
+        color: rgba(121, 85, 72, 1);
+        padding: 0 10px;
+        font-style: italic;
+    }
+
+    input:focus {
+        background-color: rgba(33, 150, 243, 0.5);
+        border-bottom:;
     }
 
     div.semicolon {
         margin: 0 1px;
     }
 
-    input {
-        font-size: 12px;
-        padding: 0;
-        outline: none;
-        border: 0;
-        background: transparent;
-        color: #2E7D32;
-        transition: width 0.15s linear;
-    }
-
     div.pull_right {
         margin-left: auto;
     }
 
-    div.op_outer{
-        padding: 3px 0;
+    div.op_outer {
+        padding: 2px 0;
     }
 
     div.op {
@@ -200,7 +203,10 @@
         border-radius: 5px;
         background-color: transparent;
         box-shadow: 0 0 0 0 transparent;
-        cursor: pointer;
+    }
+
+    div.op_ctl {
+        cursor: pointer
     }
 
     input::-webkit-input-placeholder {
