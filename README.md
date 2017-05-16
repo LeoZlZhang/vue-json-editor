@@ -1,18 +1,46 @@
-# jeditor
+# vue-json-editor-block-view
 
-> A Vue.js project
+Json editor(block view) for Vue
 
-## Build Setup
+## Requirements
 
-``` bash
-# install dependencies
-npm install
+* Vue >= 2.2.1
 
-# serve with hot reload at localhost:8080
-npm run dev
+## Installation
 
-# build for production with minification
-npm run build
+```bash
+npm i vue-json-editor-block-view -S
 ```
 
-For detailed explanation on how things work, consult the [docs for vue-loader](http://vuejs.github.io/vue-loader).
+## Usage
+
+You should always call the `Vue.use()` global method:
+
+```js
+import Vue from 'vue';
+import JsonEditor from 'vue-json-editor-block-view'
+
+Vue.use(JsonEditor);
+```
+
+Then you can use the components in your template.
+
+```html
+<v-json-editor
+    :data="myData"
+    :editable="editable"
+    @change="$forceUpdate()"
+></v-json-editor>
+```
+`data`: json formatted data.
+`editable`: set true to turn on edit mode
+`@change`: whenever data change, this event will be trigger.
+
+## Demo
+
+* [Normal usage with edit mode](https://jsfiddle.net/013mnez9/3/)
+
+##Source code
+
+* [vue-json-editor](https://github.com/LeoZlZhang/vue-json-editor.git)
+

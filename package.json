@@ -1,9 +1,9 @@
 {
-  "name": "jeditor",
+  "name": "vue-json-editor-block-view",
   "description": "A Vue.js project",
-  "version": "1.0.0",
-  "author": "",
-  "private": true,
+  "version": "1.0.19",
+  "author": "leo_zhang",
+  "private": false,
   "scripts": {
     "dev": "cross-env NODE_ENV=development webpack-dev-server --open --hot",
     "build": "cross-env NODE_ENV=production webpack --progress --hide-modules"
@@ -22,5 +22,14 @@
     "vue-template-compiler": "^2.2.1",
     "webpack": "^2.2.0",
     "webpack-dev-server": "^2.2.0"
-  }
+  },
+  "keywords": [
+    "vue",
+    "json editor",
+    "block view",
+    "plugin",
+    "component"
+  ],
+  "main": "dist/vue-json-editor-block-view.js",
+  "jsnext:main": "src/index.js"
 }
