@@ -4,6 +4,7 @@
             <template v-if="data && Object.keys(data).length>0">
                 <div v-for="(value_of_data,key_of_data) in data" :key="key_of_data">
                     <t-kv :label="key_of_data.toString()"
+                          :instruct="data_is_array ? operation_mode.instruct : key_of_data"
                           :value="value_of_data"
                           :label_width="label_width_max"
                           :value_width="value_width(value_of_data)"
@@ -34,6 +35,7 @@
         name: 'jsonMap',
         props: {
             label: [String],
+            instruct: {type: String, required: false, default: ''},
             data: [Array, Object],
             edit_mode: {type: Boolean, required: false, default: false},
             query_mode_function: {
@@ -108,7 +110,7 @@
                 } else {
                     return 80
                 }
-            }
+            },
         },
         methods: {
             addFirstKv(){
@@ -122,7 +124,7 @@
                     if (type === 'delete') {
                         this.data.splice(key, 1);
                     } else if (type === 'insert') {
-                        this.data.splice(key + 1, 0, newVal);
+                        this.data.splice(key + 1, 0, this.operation_mode.instruct ? {} : newVal);
                     } else if (type === 'update_value') {
                         this.data[key] = newVal === '{}' ? {} : newVal === '[]' ? [] : newVal;
                     }
@@ -142,16 +144,13 @@
                                     updateProperty(this.data, key, newVal);
                                     if (mode_new.mode !== 'free_style')
                                         this.data[newVal] = mode_new.mode === 'array' ? [] : {};
-                                    else
-                                        this.data[newVal] = '';
                                 } else {
                                     this.$children.filter(c => c.label === key).forEach(c => c.$forceUpdate())
                                 }
                             } else {
                                 updateProperty(this.data, key, newVal);
-                                if (mode_new.mode !== 'free_style') {
+                                if (mode_new.mode !== 'free_style')
                                     this.data[newVal] = mode_new.mode === 'array' ? [] : {};
-                                }
                             }
                         }
                     } else if (type === 'update_value') {
@@ -162,21 +161,24 @@
                 this.reCompute = !this.reCompute;
                 this.$emit('change')
             },
-            value_width(value)
-            {
+            value_width(value){
                 return Math.max(measure_width(value), 36)
-            }
-            ,
+            },
         },
         created()
         {
-            this.operation_mode = this.query_mode_function(this.label);
+            this.operation_mode = this.query_mode_function(this.instruct);
             if (this.data && Object.keys(this.data).length === 0) {
                 if (this.operation_mode.mode === 'fixed_keys') {
                     this.operation_mode.keys.forEach(key => this.data[key] = this.query_mode_function(key).mode === 'free_style' ? '' : {});
                 }
             }
-            this.data_is_array = this.data instanceof Array;
+            if (this.data instanceof Array) {
+                this.data_is_array = true;
+                this.operation_mode.mode = 'array'
+            } else
+                this.data_is_array = false;
+
         }
         ,
         mounted()

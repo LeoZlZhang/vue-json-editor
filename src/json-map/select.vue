@@ -85,7 +85,9 @@
         margin-top: 5px;
         border-radius: 4px;
         box-shadow: 0 0 5px 0 rgba(189, 195, 199, 1);
+        background: white;
         overflow: auto;
+        position: absolute
     }
 
     div.menu_item {

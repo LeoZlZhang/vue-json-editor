@@ -15,7 +15,8 @@
                 <input
                         v-if="mode==='free_style'"
                         :style="style_label_width"
-                        type="text" :value="label"
+                        type="text"
+                        :value="label"
                         placeholder="key..."
                         :disabled="!edit_mode"
                         @focusout="keyChanged($event.target.value)"/>
@@ -26,14 +27,15 @@
                 </div>
                 <t-select
                         v-if="mode==='options_key'"
-                        :width="label_width"
-                        :options="options"
                         :value="label"
+                        :width="label_width"
+                        :disabled="!edit_mode"
+                        :options="options"
                         @input="keyChanged"></t-select>
             </div>
             <div class="semicolon"><strong>:</strong></div>
             <div :class="{input:true,input_ctl:false}" v-if="value instanceof Object">
-                <t-map :label="label" :data="value" :edit_mode="edit_mode" :query_mode_function="query_mode_function" @change="onChange"></t-map>
+                <t-map :label="label" :instruct="instruct" :data="value" :edit_mode="edit_mode" :query_mode_function="query_mode_function" @change="onChange"></t-map>
             </div>
             <div :class="{input:true,input_ctl:edit_mode}" v-else>
                 <input :style="style_value_width" type="text" :value="value" placeholder="value..." :disabled="!edit_mode" @input="valueChanged"/>
@@ -54,6 +56,7 @@
         props: {
             label: {type: [String, Number, Boolean], required: false, default: null},
             value: [String, Number, Boolean, Object, Array],
+            instruct: {type: String, required: false, default: ''},
             label_width: {type: Number, required: false, default: 6},
             value_width: {type: Number, required: false, default: 36},
             edit_mode: {type: Boolean, required: false, default: false},
@@ -78,19 +81,19 @@
         },
         methods: {
             show_container_border(rgbArray){
-                if (this.edit_mode && this.$refs.container) {
+                if (this.edit_mode && this.mode!=='fixed_keys' && this.$refs.container) {
                     this.$refs.container.style.borderColor = `rgba(${rgbArray}, 1)`;
                     this.$refs.container.style.boxShadow = `0 0 10px 0 rgba(${rgbArray}, 1)`
                 }
             },
             transparent_container_border(){
-                if (this.edit_mode && this.$refs.container) {
+                if (this.edit_mode && this.mode!=='fixed_keys' && this.$refs.container) {
                     this.$refs.container.style.borderColor = 'transparent';
                     this.$refs.container.style.boxShadow = '0 0 0 0 transparent'
                 }
             },
             show_op_button(){
-                if (this.edit_mode && this.$refs['add'] && this.$refs['del']) {
+                if (this.edit_mode && this.mode!=='fixed_keys' && this.$refs['add'] && this.$refs['del']) {
                     this.$refs['add'].style.backgroundColor = `rgba(${this.adding_color}, 0.9)`;
                     this.$refs['add'].style.boxShadow = `0 0 3px 0 rgba(${this.adding_color}, 1)`;
                     this.$refs['del'].style.backgroundColor = `rgba(${this.deleting_color}, 0.9)`;
@@ -98,7 +101,7 @@
                 }
             },
             transparent_op_button(){
-                if (this.edit_mode && this.$refs['add'] && this.$refs['del']) {
+                if (this.edit_mode && this.mode!=='fixed_keys' && this.$refs['add'] && this.$refs['del']) {
                     this.$refs['add'].style.backgroundColor = 'transparent';
                     this.$refs['add'].style.boxShadow = '0 0 0 0 transparent';
                     this.$refs['del'].style.backgroundColor = 'transparent';
@@ -211,5 +214,9 @@
 
     input::-webkit-input-placeholder {
         color: #A5D6A7;
+    }
+
+    input:focus::-webkit-input-placeholder {
+        color: white;
     }
 </style>
