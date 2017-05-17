@@ -6,7 +6,7 @@ module.exports = {
     output: {
         path: path.resolve(__dirname, './dist'),
         publicPath: '/dist/',
-        filename: 'vue-json-editor-block-view.js',
+        filename: 'vue-json-editor-block-view.min.js',
         libraryTarget: 'umd',
         library: 'vue_json_editor_block_view',
     },
@@ -48,24 +48,24 @@ module.exports = {
     },
     devtool: '#eval-source-map'
 }
-//
-// if (process.env.NODE_ENV === 'production') {
-//   module.exports.devtool = '#source-map'
-//   // http://vue-loader.vuejs.org/en/workflow/production.html
-//   module.exports.plugins = (module.exports.plugins || []).concat([
-//     new webpack.DefinePlugin({
-//       'process.env': {
-//         NODE_ENV: '"production"'
-//       }
-//     }),
-//     new webpack.optimize.UglifyJsPlugin({
-//       sourceMap: true,
-//       compress: {
-//         warnings: false
-//       }
-//     }),
-//     new webpack.LoaderOptionsPlugin({
-//       minimize: true
-//     })
-//   ])
-// }
+
+if (process.env.NODE_ENV === 'production') {
+  module.exports.devtool = '#source-map'
+  // http://vue-loader.vuejs.org/en/workflow/production.html
+  module.exports.plugins = (module.exports.plugins || []).concat([
+    new webpack.DefinePlugin({
+      'process.env': {
+        NODE_ENV: '"production"'
+      }
+    }),
+    new webpack.optimize.UglifyJsPlugin({
+      sourceMap: true,
+      compress: {
+        warnings: false
+      }
+    }),
+    new webpack.LoaderOptionsPlugin({
+      minimize: false
+    })
+  ])
+}

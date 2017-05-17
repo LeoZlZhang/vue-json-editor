@@ -1,7 +1,7 @@
 {
   "name": "vue-json-editor-block-view",
   "description": "A Vue.js project",
-  "version": "1.0.19",
+  "version": "1.0.21",
   "author": "leo_zhang",
   "private": false,
   "scripts": {
@@ -30,6 +30,6 @@
     "plugin",
     "component"
   ],
-  "main": "dist/vue-json-editor-block-view.js",
+  "main": "dist/vue-json-editor-block-view.min.js",
   "jsnext:main": "src/index.js"
 }
