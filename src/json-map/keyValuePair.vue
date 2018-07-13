@@ -174,6 +174,7 @@
         background-color: transparent;
         color: #2E7D32;
         transition: width, background-color 0.15s linear;
+        box-sizing: content-box;
     }
 
     div.fixed_label {
