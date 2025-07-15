@@ -25,8 +25,17 @@
         },
         data(){
           return {
-              ini_data:{}
+              ini_data: {}
           }
+        },
+        watch: {
+            data: {
+                handler(newData) {
+                    this.ini_data = newData;
+                },
+                immediate: true,
+                deep: true
+            }
         },
         methods:{
             onChange(){
@@ -34,7 +43,7 @@
             }
         },
         mounted(){
-            this.ini_data = this.data;
+            // Removed shallow copy - now handled by watcher
         }
     }
 </script>

@@ -186,7 +186,7 @@
 
     input:focus {
         background-color: rgba(33, 150, 243, 0.5);
-        border-bottom:;
+        border-bottom: 1px solid rgba(33, 150, 243, 1);
     }
 
     div.semicolon {

@@ -14,7 +14,7 @@
             menu_height: {type: Number, required: false, default: 100},
             disabled: {type: Boolean, required: false, default: false},
             options: {
-                type: Array, require: false, default: () => {
+                type: Array, required: false, default: () => {
                     return []
                 }
             },
@@ -45,10 +45,15 @@
             }
         },
         mounted() {
-            let vm = this;
-            window.addEventListener('click', () => {
-                vm.ctl_drop_down = false
-            });
+            this.clickHandler = () => {
+                this.ctl_drop_down = false
+            };
+            window.addEventListener('click', this.clickHandler);
+        },
+        beforeDestroy() {
+            if (this.clickHandler) {
+                window.removeEventListener('click', this.clickHandler);
+            }
         },
     }
 </script>
