@@ -8,13 +8,23 @@ export const measure_width = (words) => {
 
 export const updateProperty = (targetObj, oldPro, newPro) => {
     if (targetObj && (oldPro || oldPro === '') && (newPro || newPro === '')) {
-        newPro = !(/^[\d]+$/.test(newPro)) ? newPro : '#'.concat(newPro) === oldPro ? newPro.concat('#') : '#'.concat(newPro);
-        if (oldPro === newPro || targetObj.hasOwnProperty(newPro)) {
+        // Avoid conflicts with numeric keys by adding suffix if needed
+        let finalNewPro = newPro;
+        if (/^[\d]+$/.test(newPro)) {
+            finalNewPro = oldPro === '#' + newPro ? newPro + '#' : '#' + newPro;
+        }
+        
+        if (oldPro === finalNewPro || targetObj.hasOwnProperty(finalNewPro)) {
             return;
         }
+        
         let newObj = {};
         Object.keys(targetObj).forEach(pro => {
-            pro === oldPro ? newObj[newPro] = targetObj[pro] : newObj[pro] = targetObj[pro];
+            if (pro === oldPro) {
+                newObj[finalNewPro] = targetObj[pro];
+            } else {
+                newObj[pro] = targetObj[pro];
+            }
             delete targetObj[pro];
         });
         Object.keys(newObj).forEach(pro => targetObj[pro] = newObj[pro]);
