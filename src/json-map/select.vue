@@ -14,7 +14,7 @@
             menu_height: {type: Number, required: false, default: 100},
             disabled: {type: Boolean, required: false, default: false},
             options: {
-                type: Array, require: false, default: () => {
+                type: Array, required: false, default: () => {
                     return []
                 }
             },

@@ -25,16 +25,21 @@
         },
         data(){
           return {
-              ini_data:{}
+              ini_data: this.data || {}
           }
+        },
+        watch: {
+            data: {
+                handler(newVal) {
+                    this.ini_data = newVal || {};
+                },
+                immediate: true
+            }
         },
         methods:{
             onChange(){
                 this.$emit('change')
             }
-        },
-        mounted(){
-            this.ini_data = this.data;
         }
     }
 </script>
